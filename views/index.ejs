@@ -1,0 +1,58 @@
+<%- include('partials/header') %>
+
+<h2>Recent Blog Posts</h2>
+
+<% if (messages.error && messages.error.length) { %>
+    <% messages.error.forEach(message => { %>
+        <div style="background:#000;color:#fff;border:1px solid #999;padding:10px;border-radius:4px;margin-bottom:12px;"><strong>Error:</strong> <%= message %></div>
+    <% }) %>
+<% } %>
+<% if (messages.success && messages.success.length) { %>
+    <% messages.success.forEach(message => { %>
+        <div style="background:#000;color:#fff;border:1px solid #999;padding:10px;border-radius:4px;margin-bottom:12px;"><strong>Success:</strong> <%= message %></div>
+    <% }) %>
+<% } %>
+
+<form action="/api/posts" method="GET" style="margin-bottom:18px; display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+    <label for="sortBy" style="margin:0;">Sort by:</label>
+    <select id="sortBy" name="sortBy" style="padding:6px; border-radius:4px; border:1px solid #ccc;">
+        <option value="recent" <%= sortBy === 'recent' ? 'selected' : '' %>>Recent</option>
+        <option value="creator" <%= sortBy === 'creator' ? 'selected' : '' %>>User ID</option>
+    </select>
+
+    <label for="sortOrder" style="margin:0;">Order:</label>
+    <select id="sortOrder" name="sortOrder" style="padding:6px; border-radius:4px; border:1px solid #ccc;">
+        <option value="desc" <%= sortOrder === 'desc' ? 'selected' : '' %>>
+            <%= sortBy === 'creator' ? 'Highest ID first' : 'Newest first' %>
+        </option>
+        <option value="asc" <%= sortOrder === 'asc' ? 'selected' : '' %>>
+            <%= sortBy === 'creator' ? 'Lowest ID first' : 'Oldest first' %>
+        </option>
+    </select>
+
+    <button type="submit" style="padding:8px 12px; border:none; border-radius:4px; background:#1976d2; color:#fff; cursor:pointer;">Apply</button>
+</form>
+
+<% if (posts && posts.length > 0) { %>
+    <% posts.forEach(post => { %>
+        <article style="border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; border-radius: 5px;">
+            <h3><%= post.title %></h3>
+            <p><%= post.description %></p>
+            <small>Posted by <%= post.creator_name || ('User ID: ' + post.creator) %> (ID: <%= post.creator %>)</small>
+
+            <% if (typeof currentUser !== 'undefined' && currentUser && currentUser.id === post.creator) { %>
+                <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
+                    <a href="/api/posts/<%= post.pid %>/edit" style="background:#1976d2;color:#fff;padding:6px 10px;border-radius:4px;text-decoration:none;">Edit Post</a>
+                    <form action="/api/posts/<%= post.pid %>/delete" method="POST" style="display:inline;">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <button type="submit" style="background:#d32f2f;color:#fff;padding:6px 10px;border-radius:4px;border:none;cursor:pointer;">Delete Post</button>
+                    </form>
+                </div>
+            <% } %>
+        </article>
+    <% }) %>
+<% } else { %>
+    <p>No posts available yet. Be the first to write one!</p>
+<% } %>
+
+<%- include('partials/footer') %>
